@@ -1,20 +1,8 @@
 import React from "react";
-import {
-  useForm,
-  FormContext,
-  useFormContext,
-  Controller,
-  useFieldArray
-} from "./src";
-import { DevTool } from "react-hook-form-devtools";
+import {Controller, FormContext, useFieldArray, useForm, useFormContext} from "./src";
+import {DevTool} from "react-hook-form-devtools";
 import ReactDOM from "react-dom";
-import {
-  Select,
-  MenuItem,
-  TextField,
-  createMuiTheme,
-  ThemeProvider
-} from "@material-ui/core";
+import {createMuiTheme, MenuItem, Select, TextField, ThemeProvider} from "@material-ui/core";
 import DeleteIcon from "@material-ui/icons/Delete";
 import IconButton from "@material-ui/core/IconButton";
 
@@ -26,13 +14,13 @@ function App() {
   const methods = useForm({
     defaultValues: {
       test: [
-        { salutation: "Mr.", name: "Alex" },
-        { salutation: "Mrs.", name: "Barbara" },
-        { salutation: "Ms.", name: "Candy" }
+        {id: 1, salutation: 1, name: "Alex"},
+        {id: 2, salutation: 2, name: "Barbara"},
+        {id: 3, salutation: 3, name: "Candy"}
       ]
     }
   });
-  const { handleSubmit } = methods;
+  const {handleSubmit} = methods;
   console.log(methods.formState.dirty);
 
   const onSubmit = data => console.log("data", data);
@@ -47,39 +35,60 @@ function App() {
 
   return (
     <ThemeProvider theme={theme}>
-      <DevTool control={methods.control} />
+      <DevTool control={methods.control}/>
       <form onSubmit={handleSubmit(onSubmit)}>
         <h1>Field Array </h1>
         <p>The following demo allow you to delete, append, prepend items</p>
         <span className="counter">Render Count: {renderCount}</span>
         <FormContext {...methods}>
-          <Fields />
+          <Fields/>
         </FormContext>
-        <input type="submit" />
+        <input type="submit"/>
       </form>
     </ThemeProvider>
   );
 }
 
-function MySelect({ value }) {
+function SalutationPicker({value, onChange, onBlur}) {
   return (
-    <Select value={value}>
-      <MenuItem key="1" value="Mr.">
-        option 1
+    <Select value={value} onChange={onChange} onBlur={onBlur}>
+      <MenuItem key="1" value={1}>
+        Mr.
       </MenuItem>
-      <MenuItem key="2" value="Mrs.">
-        option 2
+      <MenuItem key="2" value={2}>
+        Mrs.
       </MenuItem>
-      <MenuItem key="3" value="Ms.">
-        option 3
+      <MenuItem key="3" value={3}>
+        Ms.
       </MenuItem>
     </Select>
   );
 }
 
+
+const NameField = ({name, control}) => {
+  return (
+    <Controller name={name}
+                control={control}
+                as={({onChange, onBlur, value}) => (
+                  <TextField value={value} onChange={onChange} onBlur={onBlur}/>
+                )}/>
+  )
+}
+
+const SalutationField = ({name, control}) => {
+  return (
+    <Controller name={name}
+                control={control}
+                as={({onChange, onBlur, value}) => (
+                  <SalutationPicker value={value} onChange={onChange} onBlur={onBlur}/>
+                )}/>
+  )
+}
+
 function Fields() {
-  const { control, formState } = useFormContext();
-  const { fields, append, remove } = useFieldArray({
+  const {control, formState} = useFormContext();
+  const {fields, append, remove} = useFieldArray({
     control,
     name: "test"
   });
@@ -91,10 +100,11 @@ function Fields() {
         {fields.map((item, index) => {
           return (
             <li key={item.id}>
-              <Controller as={<MySelect />} name={`test[${index}].option`} />
-              <Controller as={<TextField />} name={`test[${index}].name`} />
+              <SalutationField name={`test[${index}].salutation`} control={control}/>
+              <NameField name={`test[${index}].name`} control={control}/>
+
               <IconButton onClick={() => remove(index)}>
-                <DeleteIcon />
+                <DeleteIcon/>
               </IconButton>
             </li>
           );
@@ -105,7 +115,7 @@ function Fields() {
         <button
           type="button"
           onClick={() => {
-            append({ name: "append" });
+            append([{salutation: 2, name: "New girl"}]);
           }}
         >
           append
@@ -116,4 +126,4 @@ function Fields() {
 }
 
 const rootElement = document.getElementById("root");
-ReactDOM.render(<App />, rootElement);
+ReactDOM.render(<App/>, rootElement);
